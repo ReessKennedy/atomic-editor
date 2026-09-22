@@ -155,6 +155,23 @@ export interface AtomicCodeMirrorEditorProps {
   readOnly?: boolean;
 
   /**
+   * Enable the browser or WebView's native writing assistance on the
+   * editable CodeMirror surface. This lets the host platform provide its
+   * own spelling indicators, correction menu, and user dictionary.
+   *
+   * Defaults to `false` to preserve the editor's existing code-oriented
+   * behavior. The setting is captured at mount like `extensions`; change
+   * `documentId` to apply a different value.
+   */
+  spellcheck?: boolean;
+
+  /**
+   * BCP 47 language tag passed to the native spelling service when
+   * `spellcheck` is enabled. Defaults to `en-US`.
+   */
+  spellcheckLanguage?: string;
+
+  /**
    * Called on every doc change with the current markdown. Fires for
    * both user edits and any dispatches the editor produces internally
    * (e.g. checkbox toggles, tight-list continuations).
@@ -252,6 +269,8 @@ export function AtomicCodeMirrorEditor({
   initialRevealText,
   blurEditorOnMount,
   readOnly = false,
+  spellcheck = false,
+  spellcheckLanguage = 'en-US',
   onMarkdownChange,
   onLinkClick,
   editorHandleRef,
@@ -316,6 +335,17 @@ export function AtomicCodeMirrorEditor({
           extendEmphasisPair,
           autoCloseCodeFence,
           EditorView.lineWrapping,
+          ...(spellcheck
+            ? [
+                EditorView.contentAttributes.of({
+                  spellcheck: 'true',
+                  lang: spellcheckLanguage,
+                  autocorrect: 'on',
+                  autocapitalize: 'sentences',
+                  writingsuggestions: 'true',
+                }),
+              ]
+            : []),
           // Find-in-document. `top: true` drops the panel above the
           // editor (matching Obsidian / the prior Milkdown panel).
           // The createPanel wrapper adds a stable class that external
